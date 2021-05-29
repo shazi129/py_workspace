@@ -41,6 +41,8 @@ import numpy as np
 import tensorflow as tf
 import tensorlayer as tl
 
+from tensorflow import keras
+
 # add arguments in command  --train/test
 # 关于argparase的应用，可以看看我这篇知乎专栏：
 # 小段文讲清argparse模块基本用法[小番外]
@@ -72,15 +74,20 @@ def to_one_hot(i, n_classes=None):
 
 ## Define Q-network q(a,s) that ouput the rewards of 4 actions by given state, i.e. Action-Value Function.
 # encoding for state: 4x4 grid can be represented by one-hot vector with 16 integers.
-def get_model(inputs_shape):
+def get_model():
     '''
     定义Q网络模型：
     1. 注意输入的shape和输出的shape
     2. W_init和b_init是模型在初始化的时候，控制初始化参数的随机。该代码中用正态分布，均值0，方差0.01的方式初始化参数。
     '''
-    ni = tl.layers.Input(inputs_shape, name='observation')
-    nn = tl.layers.Dense(4, act=None, W_init=tf.random_uniform_initializer(0, 0.01), b_init=None, name='q_a_s')(ni)
-    return tl.models.Model(inputs=ni, outputs=nn, name="Q-Network")
+    #ni = tl.layers.Input(inputs_shape, name='observation')
+    #nn = tl.layers.Dense(4, act=None, W_init=tf.random_uniform_initializer(0, 0.01), b_init=None, name='q_a_s')(ni)
+    #return tl.models.Model(inputs=ni, outputs=nn, name="Q-Network")
+    keras.models.Sequential([
+        keras.layers.Flatten(),
+        keras.layers.Dense(128, activation=tf.nn.relu),
+        keras.layers.Dense(4, activation=tf.nn.relu)
+    ])
 
 def save_ckpt(model):  # save trained weights
     '''
@@ -98,12 +105,12 @@ def load_ckpt(model):  # load trained weights
 
 if __name__ == '__main__':
 
-    qnetwork = get_model([None, 16])            #定义inputshape[None,16]。16是state数量
-    qnetwork.train()                            #调用tensorlayer的时候，需要标注这个模型是否可以训练。(再次吐槽tenorlayers...)
-    train_weights = qnetwork.trainable_weights  #模型的参数
+    #定义神经网络
+    qnetwork = get_model()
+    qnetwork.compile(optimizer='sgd', loss='mean_squared_error')
 
-    optimizer = tf.optimizers.SGD(learning_rate=0.1)   #定义优化器
-    env = gym.make('FrozenLake-v0')                    #定义环境
+    #定义环境
+    env = gym.make('FrozenLake-v0')                    
 
     # ======开始训练=======
     if args.train:
