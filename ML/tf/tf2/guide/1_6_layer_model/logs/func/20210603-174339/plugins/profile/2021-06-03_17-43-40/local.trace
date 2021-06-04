@@ -1,0 +1,70 @@
+
+9õ4
+	/host:CPUõœ 
+
+tf_Computeœ à—à—
+
+/device:GPU:0" õà—tf.constantH ±Ö€P Á"Võà—__call__HÀ¾¼İPà¾ı§ÔZ
+tracing_count1Z!
+tf_function_calltraced-nonXla"1õà—tf.function-graph_buildingHà¿ÌÒ„PÀ¥ÈŠ"&õà—convert_to_tensorH øÖƒÒPÀŸ«"'õà—convert_to_tensorHÀß¡ÒPÀáä­"'õà—convert_to_tensorHÀçéüÓPàÎ¡"&õà—convert_to_tensorHÀ¾Ú¿ØPà£·"&õà—convert_to_tensorH€½éÏØPàËú"'õà—convert_to_tensorHà¸…”ÚP ©ù"'õà—convert_to_tensorHà…ßÏÚPàıî¶"&õà—convert_to_tensorHà˜œöİPÀá˜"&õà—convert_to_tensorH ±ÕƒŞP üÕ"&õà—convert_to_tensorHàø¿­àP€±½"&õà—convert_to_tensorH ïş—ãP ¾Ã"'õà—convert_to_tensorHà©˜ãP ÿÛË"'õà—convert_to_tensorH ÈåãP€å£ñ"&õà—convert_to_tensorH€¸»¤çPàî"&õà—convert_to_tensorHàÇ«²çP€Ì«"'õà—convert_to_tensorH€ˆ‰´éP œè¨"'õà—convert_to_tensorHÀÀûéP ‚áÏ"&õà—convert_to_tensorHÀÁÍ„íPà¹†"&õà—convert_to_tensorH “«‘íPà¬±"&õà—convert_to_tensorH äèÄîP Ÿú"&õà—convert_to_tensorHà¸êÚïP Ÿú"&õà—convert_to_tensorHÀÔŠ«ğPÀ÷ç".õà—TFE_Py_ExecuteCancelableHÀµ©½–P ·Ø?";õà—%EagerExecute: __inference___call___54HÀÁïÎ–P€ƒ‰?"@õà—*EagerLocalExecute: __inference___call___54HÀà¸Ï–P€¯¼ˆ?"4õà—EagerCopyToDeviceAndAddCacheKeyHàö¸Ğ–P€ "Aõà—-TensorHandle::GetResourceHandleInfo WaitReadyHàš¡Ô–P€µ"Aõà—-TensorHandle::GetResourceHandleInfo WaitReadyH€±¡Õ–P "Aõà—-TensorHandle::GetResourceHandleInfo WaitReadyH€ĞêÕ–P "Aõà—-TensorHandle::GetResourceHandleInfo WaitReadyHàá­Ö–P "2õà—ValidateInputTypeAndPlacementHà“Ğ™ÓP µÉ"\õà—EagerKernelExecute 0Hà®¾œÓP òÈºZ!
+	step_nameEagerKernelExecute 0Z
+group_id0"Kõà—FunctionRunHàÀ»˜ÔPàÚ×Z
+id-2955177291121848969Z
+group_id0"+õà—TFE_DeleteTensorHandleH ó°—ÖP µÉ"+õà—TFE_DeleteTensorHandleHà„¤ØPÀÂÏ" õà—tf.constantH€ÃúñP „Á"*õà—TFE_DeleteTensorHandleH –ş†P ¬O"-õà—TFE_Py_FastPathExecute_CHà‚Î­P€ÎA"*õà—TFE_DeleteTensorHandleHàÂè¹PÀš"&õà—TFE_DeleteTensorHandleH ±Öº"-õà—EagerExecute: LogicalAndH ïè»Pàûİ1"2õà—EagerLocalExecute: LogicalAndHÀ›¸¼P€€ê0"1õà—ValidateInputTypeAndPlacementH ®ôÚPÀÏ$"6õà—EagerKernelExecuteHàçÉÛPàş¿Z
+group_id0"aõà—
+LogicalAndH€‡ÄİP€öZ"
+	long_nameLogicalAnd:LogicalAndZ
+group_id0Z
+is_eager1"&õà—convert_to_tensorHàĞ ‡Pàè"-õà—TFE_Py_FastPathExecute_CHàç³ŒP ´º"+õà—EagerExecute: IdentityHÀ™„“PÀ®ˆ"0õà—EagerLocalExecute: IdentityH€é¨“PàÑİ"1õà—ValidateInputTypeAndPlacementH ¤ÕP€µ"6õà—EagerKernelExecuteHÀ›ŒPà„îZ
+group_id0"Zõà—IdentityHÀïíP€ê0Z
+	long_nameIdentity:IdentityZ
+group_id0Z
+is_eager1"-õà—TFE_Py_FastPathExecute_CHàçè¤P€Ù€"&õà—convert_to_tensorHà¾ÈP ÕÖ"&õà—convert_to_tensorH€ç¿ÑP€¸ä" õà—tf.constantH€³ëÖP€ç™"*õà—TFE_DeleteTensorHandleHàÎìİP Â"&õà—convert_to_tensorH€İ¶ãPÀÚ¦" õà—tf.constantHà¨±çP€¶Ü"*õà—TFE_DeleteTensorHandleHàŠ¬ìP€µ"&õà—convert_to_tensorHàÍİğP Ï¨" õà—tf.constantHà’—€P ¤™"*õà—TFE_DeleteTensorHandleH€ãÎ„P€µ"-õà—TFE_Py_ExecuteCancelableHàÉ·‹P ¡·%"/õà—EagerExecute: WriteSummaryH€ò«PÀô…""4õà—EagerLocalExecute: WriteSummaryHÀÁĞPÀŠÕ!"1õà—ValidateInputTypeAndPlacementHÀ›•˜P€µ"6õà—EagerKernelExecuteHÀ…Æ˜PÀ‘ÇZ
+group_id0"gõà—WriteSummaryH€ô³™P€¹¨Z&
+	long_nameWriteSummary:WriteSummaryZ
+group_id0Z
+is_eager1"*õà—TFE_DeleteTensorHandleHÀõ±P€ŸI"*õà—TFE_DeleteTensorHandleHàïÜ²PÀ„="*õà—TFE_DeleteTensorHandleHà¦³P " õà—tf.constantH ¡ü·Pàâ	"*õà—TFE_DeleteTensorHandleHÀàƒÀPà§"*õà—TFE_DeleteTensorHandleH –¯ÄPÀš"*õà—TFE_DeleteTensorHandleH€óÙÄPÀ„="*õà—TFE_DeleteTensorHandleHàÙÂËP ¬O"&õà—TFE_DeleteTensorHandleHàâ¼Ì"dõœ ExecutorState::ProcessH üÍ¼ÔPà°ÁZ
+id-2955177291121848969Z
+iter_num0Z
+group_id0"rõœ ReadVariableOpH€ØéÏÔPÀá˜Z0
+	long_name#add_1/ReadVariableOp:ReadVariableOpZ
+group_id0Z
+is_eager0"cõœ ExecutorState::ProcessHÀü³ÖÔP€ÔaZ
+id-2955177291121848969Z
+iter_num0Z
+group_id0"tõœ ReadVariableOpHàóêÖÔP ÂZ3
+	long_name&MatMul_1/ReadVariableOp:ReadVariableOpZ
+group_id0Z
+is_eager0"cõœ ExecutorState::ProcessH ø§×ÔPàÆ[Z
+id-2955177291121848969Z
+iter_num0Z
+group_id0"oõœ ReadVariableOpHÀºÆ×ÔP ÷6Z.
+	long_name!add/ReadVariableOp:ReadVariableOpZ
+group_id0Z
+is_eager0"dõœ ExecutorState::ProcessHÀÙØÔP ©í Z
+id-2955177291121848969Z
+iter_num0Z
+group_id0"rõœ ReadVariableOpHà›®ØÔPà§Z1
+	long_name$MatMul/ReadVariableOp:ReadVariableOpZ
+group_id0Z
+is_eager0"Tõœ MatMulHà…ßØÔP€íüZ
+	long_nameMatMul:MatMulZ
+group_id0Z
+is_eager0"Oõœ AddV2HÀÏ†êÔPÀ­ÄZ
+	long_name	add:AddV2Z
+group_id0Z
+is_eager0"Nõœ ReluHÀÌïñÔP ‰«Z
+	long_name	Relu:ReluZ
+group_id0Z
+is_eager0"Uõœ MatMulH€˜¹ôÔPà‘CZ
+	long_nameMatMul_1:MatMulZ
+group_id0Z
+is_eager0"Põœ AddV2H€ìšõÔPà‘CZ
+	long_nameadd_1:AddV2Z
+group_id0Z
+is_eager0"Oõœ ReluHÀ¥ğõÔPÀšZ
+	long_nameRelu_1:ReluZ
+group_id0Z
+is_eager0"Sõœ ExecutorDoneCallbackH Ò¡ùÔP€†ãZ
+id-2955177291121848969Z
+group_id0
