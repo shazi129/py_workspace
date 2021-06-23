@@ -8,9 +8,6 @@ def build_add():
     v_2 = tf.constant([3, 4, 5])
     return tf.add(v_1, v_2)
 
-def build_network():
-    layer = tf.keras.layers.Dense(2, activation=tf.tanh)
-
 with tf.Session() as sess:
-    tensor = build_network()
+    tensor = build_add()
     print(sess.run(tensor))
