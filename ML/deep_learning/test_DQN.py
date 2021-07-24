@@ -34,33 +34,22 @@ To run
 -------
 python tutorial_DQN.py --train/test
 """
+import os
 import argparse
 import time
 import gym
 import numpy as np
 import tensorflow as tf
-import tensorlayer as tl
-
 from tensorflow import keras
 
-# add arguments in command  --train/test
-# 关于argparase的应用，可以看看我这篇知乎专栏：
-# 小段文讲清argparse模块基本用法[小番外]
-# https://zhuanlan.zhihu.com/p/111010774
-# 注意：原代码默认为test，我改为了train。
-parser = argparse.ArgumentParser(description='Train or test neural net motor controller.')
-parser.add_argument('--train', dest='train', action='store_true', default=True)
-parser.add_argument('--test', dest='test', action='store_true', default=False)
-args = parser.parse_args()
-
-tl.logging.set_verbosity(tl.logging.DEBUG)
 
 #####################  hyper parameters  ####################
 lambd = .99             # 折扣率(decay factor)
-e = 0.1                 # epsilon-greedy算法参数，越大随机性越大，越倾向于探索行为。
+e = 0.5                 # epsilon-greedy算法参数，越大随机性越大，越倾向于探索行为。
 num_episodes = 10000    # 迭代次数
 render = False          # 是否渲染游戏
 running_reward = None
+is_training = False
 
 ##################### DQN ##########################
 
@@ -74,46 +63,53 @@ def to_one_hot(i, n_classes=None):
 
 ## Define Q-network q(a,s) that ouput the rewards of 4 actions by given state, i.e. Action-Value Function.
 # encoding for state: 4x4 grid can be represented by one-hot vector with 16 integers.
-def get_model():
+def get_model(inputs_shape):
     '''
     定义Q网络模型：
     1. 注意输入的shape和输出的shape
     2. W_init和b_init是模型在初始化的时候，控制初始化参数的随机。该代码中用正态分布，均值0，方差0.01的方式初始化参数。
     '''
-    #ni = tl.layers.Input(inputs_shape, name='observation')
-    #nn = tl.layers.Dense(4, act=None, W_init=tf.random_uniform_initializer(0, 0.01), b_init=None, name='q_a_s')(ni)
-    #return tl.models.Model(inputs=ni, outputs=nn, name="Q-Network")
-    keras.models.Sequential([
-        keras.layers.Flatten(),
-        keras.layers.Dense(128, activation=tf.nn.relu),
-        keras.layers.Dense(4, activation=tf.nn.relu)
+
+    """
+    ni = tl.layers.Input(inputs_shape, name='observation')
+    nn = tl.layers.Dense(4, act=None, W_init=tf.random_uniform_initializer(0, 0.01), b_init=None, name='q_a_s')(ni)
+    return tl.models.Model(inputs=ni, outputs=nn, name="Q-Network")
+    """
+    return keras.models.Sequential([
+        keras.layers.Input(inputs_shape, name='observation'),
+        keras.layers.Dense(128, activation=tf.nn.relu, name='q_a_s'),
+        keras.layers.Dense(4, activation=tf.nn.relu, name="Q-Network")
     ])
+
+def get_save_path():
+    this_path = os.path.split(os.path.realpath(__file__))[0]
+    return "%s/dqn_model" % this_path
 
 def save_ckpt(model):  # save trained weights
     '''
     保存参数
     '''
-    tl.files.save_npz(model.trainable_weights, name='dqn_model.npz')
+    model.save(get_save_path())
 
 
-def load_ckpt(model):  # load trained weights
+def load_ckpt():  # load trained weights
     '''
     加载参数
     '''
-    tl.files.load_and_assign_npz(name='dqn_model.npz', network=model)
+    return keras.models.load_model(get_save_path())
 
 
 if __name__ == '__main__':
 
-    #定义神经网络
-    qnetwork = get_model()
-    qnetwork.compile(optimizer='sgd', loss='mean_squared_error')
+    qnetwork = get_model([None, 16])            #定义inputshape[None,16]。16是state数量
+    qnetwork.compile()
+    train_weights = qnetwork.trainable_weights  #模型的参数
 
-    #定义环境
-    env = gym.make('FrozenLake-v0')                    
+    optimizer = tf.optimizers.SGD(learning_rate=0.1)   #定义优化器
+    env = gym.make('FrozenLake-v0')                    #定义环境
 
     # ======开始训练=======
-    if args.train:
+    if is_training:
         t0 = time.time()
         for i in range(num_episodes):
             ## 重置环境初始状态
@@ -151,7 +147,7 @@ if __name__ == '__main__':
                 with tf.GradientTape() as tape:
                     _qvalues = qnetwork(np.asarray([to_one_hot(s, 16)], dtype=np.float32))  #把s放入到Q网络，计算_qvalues。
                     #_qvalues和targetQ的差距就是loss。这里衡量的尺子是mse
-                    _loss = tl.cost.mean_squared_error(targetQ, _qvalues, is_mean=False) 
+                    _loss = tf.losses.mean_squared_error(targetQ, _qvalues) 
                 # 同梯度带求导对网络参数求导   
                 grad = tape.gradient(_loss, train_weights)
                 # 应用梯度到网络参数求导 
@@ -178,9 +174,9 @@ if __name__ == '__main__':
 
     ##============这部分是正式游戏了========
     # 这部分就不讲解了，和训练一样。只是少了epsilon-greedy。
-    if args.test:
+    else:
         t0 = time.time()
-        load_ckpt(qnetwork)  # load model
+        qnetwork = load_ckpt()  # load model
         for i in range(num_episodes):
             ## Reset environment and get first new observation
             episode_time = time.time()

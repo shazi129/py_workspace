@@ -7,5 +7,7 @@ def build_graph():
     c = tf.random.categorical(x, 1)
     return c
 
+a=tf.constant([[2.0,3.0,4.0,5.0, -1000.0, 1000.0]])
+
 with tf.Session() as sess:
-    print(sess.run(build_graph()))
+    print(sess.run(a[2]))

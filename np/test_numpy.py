@@ -9,3 +9,6 @@ print(np.dot(A_matrix, B_matrix))
 
 for i in range(1, 3):
     print(i)
+
+
+print(np.array([1], dtype=np.float32))
