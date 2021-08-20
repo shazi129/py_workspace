@@ -46,6 +46,8 @@ DISPLAY_REWARD_THRESHOLD = 400  # 如果奖励超过DISPLAY_REWARD_THRESHOLD，�
 RENDER = False                  # 开始的时候，不渲染游戏。
 num_episodes = 2                # 游戏迭代次数
 
+is_training = True
+
 ###############################  PG  ####################################
 
 

@@ -46,10 +46,12 @@ from tensorflow import keras
 #####################  hyper parameters  ####################
 lambd = .99             # 折扣率(decay factor)
 e = 0.5                 # epsilon-greedy算法参数，越大随机性越大，越倾向于探索行为。
-num_episodes = 10000    # 迭代次数
+num_episodes = 5000    # 迭代次数
 render = False          # 是否渲染游戏
 running_reward = None
-is_training = True
+is_training = False
+
+
 env = gym.make('FrozenLake-v0')  #定义环境
 
 ##################### DQN ##########################
@@ -84,7 +86,7 @@ def get_model(inputs_shape):
 
 def get_save_path():
     this_path = os.path.split(os.path.realpath(__file__))[0]
-    return "%s/dqn_model" % this_path
+    return os.path.abspath("%s/../../dqn_model" % this_path)
 
 def save_ckpt(model):  # save trained weights
     '''
@@ -99,85 +101,6 @@ def load_ckpt():  # load trained weights
     '''
     return keras.models.load_model(get_save_path())
 
-
-def training():
-
-    global lambd
-    global e
-    global num_episodes
-    global render
-    global running_reward
-    global env #定义环境
-
-    qnetwork = get_model([None, 16])            #定义inputshape[None,16]。16是state数量
-    qnetwork.compile()
-    train_weights = qnetwork.trainable_weights  #模型的参数
-    optimizer = tf.optimizers.SGD(learning_rate=0.01)   #定义优化器
-
-    t0 = time.time()
-    for i in range(num_episodes):
-        ## 重置环境初始状态
-        s = env.reset()
-        rAll = 0
-        for j in range(99):             # 最多探索99步。因为环境状态比较少，99步一般也够探索到最终状态了。
-            if render: env.render()
-
-            ## 把state放入network，计算Q值。
-            ## 注意，这里先把state进行onehote处理，这里注意解释下什么是onehot
-            ## 输出，这个状态下，所有动作的Q值，也就是说，是一个[None,4]大小的矩阵
-            Q = qnetwork(np.asarray([to_one_hot(s, 16)], dtype=np.float32)).numpy()
-
-            # 在矩阵中找最大的Q值的动作
-            a = np.argmax(Q, 1)
-
-            # e-Greedy：如果小于epsilon，就智能体随机探索。否则，就用最大Q值的动作。
-            if np.random.rand(1) < e:
-                a[0] = env.action_space.sample()
-
-            # 输入到环境，获得下一步的state，reward，done
-            s1, r, d, _ = env.step(a[0])
-
-            # 把new-state 放入，预测下一个state的**所有动作**的Q值。
-            Q1 = qnetwork(np.asarray([to_one_hot(s1, 16)], dtype=np.float32)).numpy()
-            
-            ##=======计算target=======
-            ## 构建更新target：
-            #    Q'(s,a) <- Q(s,a) + alpha(r + lambd * maxQ(s',a') - Q(s, a))
-            maxQ1 = np.max(Q1)          # 下一个状态中最大Q值.
-            targetQ = Q              # 用allQ(现在状态的Q值)构建更新的target。因为只有被选择那个动作才会被更新到。
-            targetQ[0, a[0]] = r + lambd * maxQ1    
-
-            ## 利用自动求导 进行更新。
-            with tf.GradientTape() as tape:
-                _qvalues = qnetwork(np.asarray([to_one_hot(s, 16)], dtype=np.float32))  #把s放入到Q网络，计算_qvalues。
-                #_qvalues和targetQ的差距就是loss。这里衡量的尺子是mse
-                _loss = tf.losses.mean_squared_error(targetQ, _qvalues)
-            # 同梯度带求导对网络参数求导
-            grad = tape.gradient(_loss, train_weights)
-            print("grad:" + str(grad))
-
-            # 应用梯度到网络参数求导 
-            optimizer.apply_gradients(zip(grad, train_weights))
-
-            # 累计reward，并且把s更新为newstate
-            rAll += r
-            s = s1
-
-            #更新epsilon，让epsilon随着迭代次数增加而减少。
-            #目的就是智能体越来越少进行“探索”
-            if d ==True:
-                e = 1. / ((i / 50) + 10)  
-                break
-
-        ## 这里的running_reward用于记载每一次更新的总和。为了能够更加看清变化，所以大部分是前面的。只有一部分是后面的。
-        running_reward = rAll if running_reward is None else running_reward * 0.99 + rAll * 0.01
-        # print("Episode [%d/%d] sum reward: %f running reward: %f took: %.5fs " % \
-        #     (i, num_episodes, rAll, running_reward, time.time() - episode_time))
-        print('Episode: {}/{}  | Episode Reward: {:.4f} | Running Average Reward: {:.4f}  | Running Time: {:.4f}'\
-        .format(i, num_episodes, rAll, running_reward,  time.time()-t0 ))
-    save_ckpt(qnetwork)  # save model
-
-
 def training_batch():
 
     global lambd
@@ -187,7 +110,7 @@ def training_batch():
     global running_reward
     global env #定义环境
 
-    qnetwork = get_model((16))            #定义inputshape[None,16]。16是state数量
+    qnetwork = get_model((16,))            #定义inputshape[None,16]。16是state数量
     qnetwork.compile()
     train_weights = qnetwork.trainable_weights  #模型的参数
     optimizer = tf.optimizers.SGD(learning_rate=0.1)   #定义优化器
@@ -229,24 +152,27 @@ def training_batch():
             #更新epsilon，让epsilon随着迭代次数增加而减少。
             #目的就是智能体越来越少进行“探索”
             if d ==True:
-                e = 1. / ((i / 50) + 10)  
                 break
             s = s1
 
-        #最后一个状态写死为0
-        q_batch.append(np.zeros(4))
+        target_qvalues = np.array(r_batch, dtype=np.float32)
 
-        targetQ_batch = []
-        for s_index in reversed(range(len(r_batch))):
-            q = q_batch[s_index]
-            q1 = q_batch[s_index + 1]
-            q[a_batch[s_index][0]] = r + lambd * np.max(q1)
-            targetQ_batch.append(q)
-        targetQ_batch.reverse()
+        total_reward = np.sum(target_qvalues)
+
+        for index in range(len(target_qvalues)):
+            target_qvalues[index] = np.sum(target_qvalues[index:])
+
+        target_qvalues_batch = []
+        for index in range(len(q_batch)):
+            q = q_batch[index]
+            a = a_batch[index][0]
+            q[a] = target_qvalues[index]
+            target_qvalues_batch.append(q)
+        target_qvalues_batch = np.asarray(target_qvalues_batch, dtype=np.float32)
 
         with tf.GradientTape() as tape:
             _qvalues = qnetwork(np.asarray(s_batch, dtype=np.float32))  #把s放入到Q网络，计算_qvalues。
-            _loss = tf.losses.mean_squared_error(targetQ_batch, _qvalues)
+            _loss = tf.losses.mean_squared_error(target_qvalues_batch, _qvalues)
 
         grad = tape.gradient(_loss, train_weights)
             # 应用梯度到网络参数求导 
@@ -264,6 +190,13 @@ def training_batch():
     save_ckpt(qnetwork)  # save model
 
 def predict():
+
+    global lambd
+    global num_episodes
+    global render
+    global running_reward
+    global env #定义环境
+
     t0 = time.time()
     qnetwork = load_ckpt()  # load model
     for i in range(num_episodes):
@@ -284,7 +217,6 @@ def predict():
             s = s1
             ## Reduce chance of random action if an episode is done.
             if d ==True:
-                #e = 1. / ((i / 50) + 10)  # reduce e, GLIE: Greey in the limit with infinite Exploration
                 break
 
         ## Note that, the rewards here with random action
@@ -295,6 +227,8 @@ def predict():
         .format(i, num_episodes, rAll, running_reward,  time.time()-t0 ))
 
 if __name__ == '__main__':
+
+    print("is_training:%s, taining_batch:%s" % (is_training, taining_batch))
 
     if is_training:
         training_batch()

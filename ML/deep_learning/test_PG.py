@@ -29,8 +29,8 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-
 import tensorlayer as tl
+from tensorflow import keras
 
 parser = argparse.ArgumentParser(description='Train or test neural net motor controller.')
 parser.add_argument('--train', dest='train', action='store_true', default=True)
@@ -64,30 +64,23 @@ class PolicyGradient:
         #用于保存每个ep的数据。
         self.ep_obs, self.ep_as, self.ep_rs = [], [], []
 
-        def get_model(inputs_shape):
-            """
-            创建一个神经网络
-            输入: state
-            输出: act
-            """
-            with tf.name_scope('inputs'):
-                self.tf_obs = tl.layers.Input(inputs_shape, tf.float32, name="observations")
-                #self.tf_acts = tl.layers.Input([None,], tf.int32, name="actions_num")
-                #self.tf_vt = tl.layers.Input([None,], tf.float32, name="actions_value")
-            # fc1
-            layer = tl.layers.Dense(
-                n_units=30, act=tf.nn.tanh, W_init=tf.random_normal_initializer(mean=0, stddev=0.3),
-                b_init=tf.constant_initializer(0.1), name='fc1'
-            )(self.tf_obs)
-            # fc2
-            all_act = tl.layers.Dense(
-                n_units=self.n_actions, act=None, W_init=tf.random_normal_initializer(mean=0, stddev=0.3),
-                b_init=tf.constant_initializer(0.1), name='all_act'
-            )(layer)
-            return tl.models.Model(inputs=self.tf_obs, outputs=all_act, name='PG model')
+        self.model = keras.models.Sequential([
+            keras.layers.Input((n_features,), tf.float32, name="observations"),
+            keras.layers.Dense(
+                30,
+                activation=tf.nn.tanh,
+                kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
+                bias_initializer=tf.constant_initializer(0.1), name='fc1'
+            ),
+            keras.layers.Dense(
+                self.n_actions,
+                act=None,
+                kernel_initializer=tf.random_normal_initializer(mean=0, stddev=0.3),
+                bias_initializer=tf.constant_initializer(0.1), name='all_act'
+            )
+        ])
 
-        self.model = get_model([None, n_features])
-        self.model.train()
+        self.model.compile()
         self.optimizer = tf.optimizers.Adam(self.lr)
 
     def choose_action(self, s):
