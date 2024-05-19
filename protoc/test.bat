@@ -1,0 +1,1 @@
+python %~dp0my_py_gen.py
