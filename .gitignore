@@ -1,2 +1,13 @@
 .vscode
 ./models
+
+# Manim generated files
+manim/media/
+manim/**/media/
+manim/**/__pycache__/
+manim/**/*.pyc
+manim/**/*.mp4
+manim/**/*.svg
+manim/**/*.tex
+manim/**/*.log
+manim/**/*.aux
