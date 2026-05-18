@@ -2,7 +2,7 @@
 分数与比例 —— manim 教学动画
 脚本依据：fraction_ratio.md
 
-无需 LaTeX：所有分数用 Text + Line 拼接而成。
+已启用 LaTeX：数学公式使用 MathTex 排版，中文说明继续使用 Text。
 
 运行（在本目录下）：
     manim -pql fraction_ratio.py FractionRatio
@@ -11,27 +11,7 @@
 """
 
 from manim import *
-
-
-# ==========================================================
-# 通用工具：自制分数（不依赖 LaTeX）
-# ==========================================================
-def make_frac(numer, denom, font_size=72, color=WHITE, bar_color=None):
-    """用 Text + Line 拼一个分数。numer/denom 是字符串。返回 VGroup。"""
-    if bar_color is None:
-        bar_color = color
-    n_text = Text(str(numer), font_size=font_size, color=color)
-    d_text = Text(str(denom), font_size=font_size, color=color)
-    width = max(n_text.width, d_text.width) * 1.25
-    bar = Line(LEFT * width / 2, RIGHT * width / 2, color=bar_color, stroke_width=4)
-    n_text.next_to(bar, UP, buff=0.12)
-    d_text.next_to(bar, DOWN, buff=0.12)
-    grp = VGroup(n_text, bar, d_text)
-    # 暴露子部件方便外部访问
-    grp.numer = n_text
-    grp.bar = bar
-    grp.denom = d_text
-    return grp
+import numpy as np
 
 
 def make_slices(center, radius=1.5, n=5, color=ORANGE):
@@ -66,12 +46,14 @@ class FractionRatio(Scene):
         self.scene_six_fifth_trouble()
         self.scene_ratio_view()
         self.scene_apply_problem()
+        self.scene_baseline_comparison()
+        self.scene_money_problem()
         self.scene_outro()
 
     # ---------- 1. 标题 ----------
     def scene_title(self):
-        title = Text("分数 与 比例", font_size=80, color=YELLOW)
-        sub = Text("换一种视角，看懂假分数", font_size=36).next_to(title, DOWN, buff=0.6)
+        title = Text("用比例来理解分数", font_size=72, color=YELLOW)
+        sub = Text("从 1/5、6/5 到实际应用", font_size=36).next_to(title, DOWN, buff=0.6)
         self.play(Write(title))
         self.play(FadeIn(sub, shift=UP))
         self.wait(1.5)
@@ -99,7 +81,7 @@ class FractionRatio(Scene):
         self.play(taken.animate.set_fill(RED, opacity=0.95).set_stroke(YELLOW, width=4))
         self.play(taken.animate.shift(RIGHT * 5 + DOWN * 0.6))
 
-        frac = make_frac("1", "5", font_size=84, color=RED).next_to(taken, DOWN, buff=0.4)
+        frac = MathTex(r"\frac{1}{5}", font_size=84, color=RED).next_to(taken, DOWN, buff=0.4)
         self.play(Write(frac))
         self.wait(1.2)
 
@@ -136,13 +118,14 @@ class FractionRatio(Scene):
         positions = [p + DOWN * 0.3 for p in positions]
 
         counter_label = Text("已拿：", font_size=30).shift(LEFT * 5 + DOWN * 2.8)
-        counter = Integer(0, font_size=44, color=YELLOW).next_to(counter_label, RIGHT, buff=0.2)
+        counter = Text("0", font_size=44, color=YELLOW).next_to(counter_label, RIGHT, buff=0.2)
         self.play(FadeIn(counter_label), FadeIn(counter))
 
         for i, s in enumerate(slices):
+            new_counter = Text(str(i + 1), font_size=44, color=YELLOW).move_to(counter)
             self.play(
                 s.animate.set_fill(RED, opacity=0.9).move_to(positions[i]).scale(0.7),
-                counter.animate.set_value(i + 1),
+                Transform(counter, new_counter),
                 run_time=0.5,
             )
 
@@ -191,10 +174,10 @@ class FractionRatio(Scene):
         self.wait(0.6)
 
         # 显示比例 1:5 → 1/5
-        ratio = Text("1 : 5", font_size=56, color=YELLOW).shift(DOWN * 2.7 + LEFT * 2.5)
+        ratio = MathTex(r"1:5", font_size=62, color=YELLOW).shift(DOWN * 2.7 + LEFT * 2.5)
         arrow = Arrow(start=ratio.get_right() + RIGHT * 0.2,
                       end=ratio.get_right() + RIGHT * 1.6, color=YELLOW, buff=0)
-        frac = make_frac("1", "5", font_size=72, color=YELLOW).next_to(arrow, RIGHT, buff=0.3)
+        frac = MathTex(r"\frac{1}{5}", font_size=76, color=YELLOW).next_to(arrow, RIGHT, buff=0.3)
 
         self.play(Write(ratio))
         self.play(GrowArrow(arrow))
@@ -224,15 +207,15 @@ class FractionRatio(Scene):
         extra_target_pos = my_full_cake.get_center() + RIGHT * 1.5 + UP * 0.6
         extra.move_arc_center_to(extra_target_pos)
         extra.set_stroke(YELLOW, width=4)
-        plus = Text("+1", font_size=32, color=YELLOW).next_to(extra, UP, buff=0.15)
+        plus = MathTex(r"+1", font_size=36, color=YELLOW).next_to(extra, UP, buff=0.15)
 
         self.play(FadeIn(extra), Write(plus))
         self.wait(0.5)
 
-        ratio2 = Text("6 : 5", font_size=56, color=YELLOW).shift(DOWN * 2.7 + LEFT * 2.5)
+        ratio2 = MathTex(r"6:5", font_size=62, color=YELLOW).shift(DOWN * 2.7 + LEFT * 2.5)
         arrow2 = Arrow(start=ratio2.get_right() + RIGHT * 0.2,
                        end=ratio2.get_right() + RIGHT * 1.6, color=YELLOW, buff=0)
-        frac2 = make_frac("6", "5", font_size=72, color=YELLOW).next_to(arrow2, RIGHT, buff=0.3)
+        frac2 = MathTex(r"\frac{6}{5}", font_size=76, color=YELLOW).next_to(arrow2, RIGHT, buff=0.3)
 
         self.play(Write(ratio2))
         self.play(GrowArrow(arrow2))
@@ -283,69 +266,193 @@ class FractionRatio(Scene):
         step2 = Text("第 2 步：写成分数等式", font_size=30, color=BLUE).next_to(ratio_line, DOWN, buff=0.5)
         self.play(Write(step2))
 
-        # 等式： 72/x = 3/100
-        left_frac = make_frac("72", "全校人数", font_size=44, color=WHITE)
-        eq_sign = Text("=", font_size=52).next_to(left_frac, RIGHT, buff=0.4)
-        right_frac = make_frac("3", "100", font_size=44, color=WHITE).next_to(eq_sign, RIGHT, buff=0.4)
-        equation = VGroup(left_frac, eq_sign, right_frac)
-        equation.next_to(step2, DOWN, buff=0.4)
+        # 等式：设 x = 全校人数，使用 LaTeX 展示比例等式
+        x_note = Text("设 x = 全校人数", font_size=28, color=GREEN).next_to(step2, DOWN, buff=0.35)
+        left_frac = MathTex(r"\frac{72}{x}", font_size=58, color=WHITE)
+        eq_sign = MathTex(r"=", font_size=58, color=WHITE).next_to(left_frac, RIGHT, buff=0.45)
+        right_frac = MathTex(r"\frac{3}{100}", font_size=58, color=WHITE).next_to(eq_sign, RIGHT, buff=0.45)
+        equation = VGroup(left_frac, eq_sign, right_frac).next_to(x_note, DOWN, buff=0.35)
+        self.play(Write(x_note))
         self.play(Write(equation))
         self.wait(1.5)
 
-        # 第三步：交叉相乘
-        step3 = Text("第 3 步：交叉相乘", font_size=30, color=BLUE).to_edge(DOWN, buff=2.4).shift(LEFT * 2.0)
+        # 第三步：交叉相乘，只在分数等式上画交叉线
+        step3 = Text("第 3 步：交叉相乘", font_size=30, color=BLUE).to_edge(DOWN, buff=0.65)
         self.play(Write(step3))
 
-        # 用两条彩色线表示交叉
         cross1 = Line(
-            left_frac.numer.get_center(),
-            right_frac.denom.get_center(),
+            left_frac.get_top() + DOWN * 0.12,
+            right_frac.get_bottom() + UP * 0.12,
             color=RED, stroke_width=4,
         )
         cross2 = Line(
-            left_frac.denom.get_center(),
-            right_frac.numer.get_center(),
+            left_frac.get_bottom() + UP * 0.12,
+            right_frac.get_top() + DOWN * 0.12,
             color=GREEN, stroke_width=4,
         )
         self.play(Create(cross1), Create(cross2))
-        self.wait(0.6)
+        self.wait(1.2)
 
-        # 写出 72 * 100 = 3 * 全校人数
-        cross_eq = Text("72 × 100 = 3 × 全校人数", font_size=36, color=YELLOW)
-        cross_eq.to_edge(DOWN, buff=1.4)
+        # 进入单独的计算页，避免等式、交叉线和计算过程互相重叠
+        self.play(
+            FadeOut(step1), FadeOut(ratio_line), FadeOut(step2), FadeOut(x_note), FadeOut(equation),
+            FadeOut(cross1), FadeOut(cross2), FadeOut(step3),
+        )
+
+        calc_title = Text("根据交叉相乘", font_size=34, color=BLUE).shift(UP * 1.0)
+        cross_eq = MathTex(r"72 \times 100 = 3x", font_size=58, color=YELLOW)
+        cross_eq.next_to(calc_title, DOWN, buff=0.45)
+        self.play(Write(calc_title))
         self.play(Write(cross_eq))
-        self.wait(1.5)
+        self.wait(1.2)
 
-        # 第四步：求解
-        step4 = Text("第 4 步：解出来", font_size=30, color=BLUE).next_to(step3, RIGHT, buff=2.5)
+        step4 = Text("第 4 步：解出来", font_size=32, color=BLUE).next_to(cross_eq, DOWN, buff=0.55)
+        solve_eq = MathTex(r"x = \frac{72 \times 100}{3} = 2400", font_size=54, color=GREEN)
+        solve_eq.next_to(step4, DOWN, buff=0.35)
+        result_note = Text("所以全校人数是 2400 人", font_size=34, color=GREEN).next_to(solve_eq, DOWN, buff=0.35)
         self.play(Write(step4))
-
-        solve_eq = Text("全校人数 = 72 × 100 ÷ 3 = 2400", font_size=36, color=GREEN)
-        solve_eq.to_edge(DOWN, buff=0.5)
         self.play(Write(solve_eq))
+        self.play(FadeIn(result_note, shift=UP))
         self.wait(0.6)
 
-        # 高亮答案
-        ans_box = SurroundingRectangle(solve_eq[-4:], color=YELLOW, buff=0.15)
+        ans_box = SurroundingRectangle(result_note, color=YELLOW, buff=0.15)
         self.play(Create(ans_box))
         self.wait(2.5)
 
         self.play(*[FadeOut(m) for m in [
-            title, problem, step1, ratio_line, step2, equation,
-            cross1, cross2, cross_eq, step3, step4, solve_eq, ans_box,
+            title, problem, calc_title, cross_eq, step4, solve_eq, result_note, ans_box,
         ]])
 
-    # ---------- 6. 收尾 ----------
+    # ---------- 6. 基准：比较依赖参照对象 ----------
+    def scene_baseline_comparison(self):
+        title = Text("比较时，一定要看“基准”", font_size=44, color=YELLOW).to_edge(UP)
+        concept = Text("有比较，才有高矮、多少；基准不同，结论可能不同。", font_size=30)
+        concept.next_to(title, DOWN, buff=0.4)
+        self.play(Write(title))
+        self.play(FadeIn(concept, shift=UP))
+
+        floor = Line(LEFT * 5.5 + DOWN * 2.5, RIGHT * 5.5 + DOWN * 2.5, color=GRAY)
+        self.play(Create(floor))
+
+        def make_height_bar(name, height_text, height_value, color, x_pos):
+            bottom = np.array([x_pos, -2.5, 0])
+            top = bottom + UP * (height_value * 2.0)
+            bar = Line(bottom, top, color=color, stroke_width=10)
+            dot = Dot(top, color=color)
+            name_label = Text(name, font_size=28, color=color).next_to(bar, DOWN, buff=0.25)
+            height_label = Text(height_text, font_size=24).next_to(bar, UP, buff=0.15)
+            return VGroup(bar, dot, name_label, height_label)
+
+        lisi = make_height_bar("李四", "1.6m", 1.6, BLUE, -3.2)
+        zhangsan = make_height_bar("张三", "1.7m", 1.7, GREEN, 0)
+        wangwu = make_height_bar("王五", "1.8m", 1.8, RED, 3.2)
+
+        self.play(FadeIn(lisi), FadeIn(zhangsan))
+        base1 = SurroundingRectangle(lisi, color=BLUE, buff=0.15)
+        compare1 = Text("以李四为基准：张三是高的", font_size=34, color=GREEN).to_edge(DOWN, buff=0.65)
+        self.play(Create(base1), Write(compare1))
+        self.wait(2)
+
+        self.play(FadeIn(wangwu))
+        base2 = SurroundingRectangle(wangwu, color=RED, buff=0.15)
+        compare2 = Text("以王五为基准：张三又变矮了", font_size=34, color=RED).to_edge(DOWN, buff=0.65)
+        self.play(ReplacementTransform(base1, base2), Transform(compare1, compare2))
+        self.wait(2.2)
+
+        summary = Text("理解分数，也要先找清楚比较的基准。", font_size=34, color=YELLOW)
+        summary.next_to(concept, DOWN, buff=0.35)
+        self.play(Write(summary))
+        self.wait(2)
+
+        self.play(*[FadeOut(m) for m in [
+            title, concept, floor, lisi, zhangsan, wangwu, base2, compare1, summary,
+        ]])
+
+    # ---------- 7. 应用题：李四比张三多 1/4 ----------
+    def scene_money_problem(self):
+        title = Text("再看一道题", font_size=44, color=YELLOW).to_edge(UP)
+        self.play(Write(title))
+
+        problem = Text("张三有 8 元，李四比张三多 1/4，李四有多少钱？", font_size=30)
+        problem.next_to(title, DOWN, buff=0.45)
+        self.play(Write(problem))
+        self.wait(1)
+
+        zhang_label = Text("张三：8 元", font_size=30, color=BLUE).shift(LEFT * 3.8 + UP * 0.6)
+        zhang_bar = Rectangle(width=4.0, height=0.55, color=BLUE, fill_color=BLUE, fill_opacity=0.65)
+        zhang_bar.next_to(zhang_label, DOWN, buff=0.25).align_to(zhang_label, LEFT)
+
+        self.play(FadeIn(zhang_label), GrowFromEdge(zhang_bar, LEFT))
+
+        ratio_label = Text("多的钱 : 张三的钱 =", font_size=28, color=YELLOW)
+        ratio_math = MathTex(r"1:4", font_size=44, color=YELLOW)
+        ratio = VGroup(ratio_label, ratio_math).arrange(RIGHT, buff=0.25)
+        ratio.next_to(problem, DOWN, buff=0.45)
+        self.play(Write(ratio))
+        self.wait(1)
+
+        split_marks = VGroup()
+        for k in range(1, 4):
+            x = zhang_bar.get_left()[0] + k * zhang_bar.width / 4
+            split_marks.add(Line([x, zhang_bar.get_bottom()[1], 0], [x, zhang_bar.get_top()[1], 0], color=WHITE))
+        self.play(Create(split_marks))
+
+        one_part = Rectangle(width=1.0, height=0.55, color=ORANGE, fill_color=ORANGE, fill_opacity=0.8)
+        one_part.next_to(zhang_bar, RIGHT, buff=0.25)
+        extra_label_text = Text("多 1 份 =", font_size=26, color=ORANGE)
+        extra_label_math = MathTex(r"8 \div 4 = 2", font_size=38, color=ORANGE)
+        extra_label_unit = Text("元", font_size=26, color=ORANGE)
+        extra_label = VGroup(extra_label_text, extra_label_math, extra_label_unit).arrange(RIGHT, buff=0.15)
+        extra_label.next_to(one_part, UP, buff=0.25)
+        self.play(GrowFromEdge(one_part, LEFT), Write(extra_label))
+        self.wait(1.4)
+
+        lisi_label = Text("李四：8 + 2 = 10 元", font_size=32, color=GREEN).shift(LEFT * 3.8 + DOWN * 1.45)
+        lisi_base = Rectangle(width=4.0, height=0.55, color=GREEN, fill_color=GREEN, fill_opacity=0.55)
+        lisi_extra = Rectangle(width=1.0, height=0.55, color=ORANGE, fill_color=ORANGE, fill_opacity=0.85)
+        lisi_bar = VGroup(lisi_base, lisi_extra).arrange(RIGHT, buff=0)
+        lisi_bar.next_to(lisi_label, DOWN, buff=0.25).align_to(lisi_label, LEFT)
+        self.play(FadeIn(lisi_label), GrowFromEdge(lisi_bar, LEFT))
+
+        answer = Text("答案：李四有 10 元", font_size=44, color=GREEN).to_edge(DOWN, buff=0.55)
+        answer_box = SurroundingRectangle(answer, color=YELLOW, buff=0.2)
+        self.play(Write(answer), Create(answer_box))
+        self.wait(1.5)
+
+        summary_title = Text("总结", font_size=34, color=YELLOW).shift(RIGHT * 2.4 + DOWN * 0.9)
+        summary1 = Text("张三的钱是比较的基准", font_size=28, color=WHITE)
+        summary2_text = Text("基准 8 在分母：", font_size=28, color=ORANGE)
+        summary2_math = MathTex(r"\frac{\Delta}{8}=\frac{1}{4}", font_size=38, color=ORANGE)
+        summary2 = VGroup(summary2_text, summary2_math).arrange(RIGHT, buff=0.15)
+        summary3 = Text("是不是一直这样呢？留给大家课后思考~", font_size=28, color=GREEN)
+        summary_group = VGroup(summary_title, summary1, summary2, summary3).arrange(DOWN, buff=0.22)
+        summary_group.shift(RIGHT * 2.2 + DOWN * 0.15)
+        summary_box = SurroundingRectangle(summary_group, color=YELLOW, buff=0.22)
+        self.play(FadeIn(summary_box), Write(summary_title))
+        self.play(FadeIn(summary1, shift=UP), FadeIn(summary2, shift=UP))
+        self.play(FadeIn(summary3, shift=UP))
+        self.wait(2.5)
+
+        self.play(*[FadeOut(m) for m in [
+            title, problem, zhang_label, zhang_bar, ratio, split_marks,
+            one_part, extra_label, lisi_label, lisi_bar, answer, answer_box,
+            summary_group, summary_box,
+        ]])
+
+    # ---------- 8. 收尾 ----------
     def scene_outro(self):
-        line1 = Text("分数 = 比例", font_size=72, color=YELLOW)
-        line2 = Text("比例问题 → 分数等式 → 交叉相乘", font_size=36, color=GREEN)
-        line2.next_to(line1, DOWN, buff=0.6)
+        line1 = Text("分数，也可以看成比例", font_size=64, color=YELLOW)
+        line2 = Text("关键：找准两个量，以及比较的基准", font_size=36, color=GREEN)
+        line3 = Text("比例问题 → 分数等式 → 交叉相乘", font_size=34, color=BLUE)
+        VGroup(line1, line2, line3).arrange(DOWN, buff=0.45)
 
         self.play(Write(line1))
         self.play(FadeIn(line2, shift=UP))
+        self.play(FadeIn(line3, shift=UP))
         self.wait(2.5)
 
         thx = Text("下次再见！", font_size=44).to_edge(DOWN, buff=0.8)
         self.play(Write(thx))
         self.wait(2)
-        self.play(FadeOut(line1), FadeOut(line2), FadeOut(thx))
+        self.play(FadeOut(line1), FadeOut(line2), FadeOut(line3), FadeOut(thx))
+
