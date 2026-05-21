@@ -44,107 +44,137 @@ class FractionRatio(Scene):
         self.scene_title()
         self.scene_review_one_fifth()
         self.scene_six_fifth_trouble()
-        self.scene_ratio_view()
-        self.scene_apply_problem()
-        self.scene_baseline_comparison()
-        self.scene_money_problem()
-        self.scene_outro()
+        # self.scene_ratio_view()
+        # self.scene_apply_problem()
+        # self.scene_baseline_comparison()
+        # self.scene_money_problem()
+        # self.scene_outro()
 
     # ---------- 1. 标题 ----------
     def scene_title(self):
-        title = Text("用比例来理解分数", font_size=72, color=YELLOW)
-        sub = Text("从 1/5、6/5 到实际应用", font_size=36).next_to(title, DOWN, buff=0.6)
+        title = Text("分数量和率", font_size=72, color=YELLOW)
         self.play(Write(title))
-        self.play(FadeIn(sub, shift=UP))
         self.wait(1.5)
-        self.play(FadeOut(title), FadeOut(sub))
+        self.play(FadeOut(title))
 
     # ---------- 2. 复习 1/5：蛋糕分 5 份取 1 份 ----------
     def scene_review_one_fifth(self):
-        title = Text("回忆一下：1/5 是什么？", font_size=44, color=YELLOW).to_edge(UP)
-        self.play(Write(title))
+        # 标题：中文 + LaTeX 分数 横排拼接
+        title_text = Text("什么是分数的量？", font_size=40, color=YELLOW)
+        title_text.to_edge(UP)
+        self.play(Write(title_text))
 
-        # 蛋糕居中
-        center = LEFT * 3 + DOWN * 0.3
+        # 把蛋糕平均分成 5 份
+        center = ORIGIN + DOWN * 0.3
         slices = make_slices(center=center, radius=1.7, n=5, color=ORANGE)
-        self.play(FadeIn(slices))
+        caption = Text("把一个蛋糕平均分成 5 份", font_size=32).next_to(slices, DOWN, buff=0.5)
+        self.play(FadeIn(slices), Write(caption))
+        self.wait(0.5)
 
-        step1 = Text("把蛋糕平均分成 5 份", font_size=30).shift(RIGHT * 2.6 + UP * 1.6)
-        self.play(Write(step1))
-        self.wait(0.4)
+        # 高亮其中一份（顶端那片）并闪烁
+        target = slices[0]
+        # 先把目标变红 + 黄色描边
+        self.play(
+            target.animate.set_fill(RED, opacity=0.95).set_stroke(YELLOW, width=5),
+            run_time=0.6,
+        )
+        # 闪烁 3 次
+        for _ in range(3):
+            self.play(target.animate.set_stroke(WHITE, width=2), run_time=0.25)
+            self.play(target.animate.set_stroke(YELLOW, width=6), run_time=0.25)
 
-        # 取一份
-        taken = slices[0]
-        rest = VGroup(*slices[1:])
-        step2 = Text("拿走其中 1 份", font_size=30).next_to(step1, DOWN, buff=0.4)
-        self.play(Write(step2))
-        self.play(taken.animate.set_fill(RED, opacity=0.95).set_stroke(YELLOW, width=4))
-        self.play(taken.animate.shift(RIGHT * 5 + DOWN * 0.6))
+        self.wait(0.3)
 
-        frac = MathTex(r"\frac{1}{5}", font_size=84, color=RED).next_to(taken, DOWN, buff=0.4)
-        self.play(Write(frac))
-        self.wait(1.2)
+        # 在高亮那份蛋糕旁标明 1/5
+        frac_label = MathTex(r"\frac{1}{5}", font_size=84, color=WHITE)
+        # 放到蛋糕右侧偏下，避免与顶部标题重叠
+        frac_label.next_to(slices, RIGHT, buff=1.0).shift(UP * 0.2)
+        arrow = Arrow(
+            start=frac_label.get_left(),
+            end=target.get_center() + UP * 0.3 + RIGHT * 0.1,
+            color=WHITE, buff=0.15, stroke_width=4,
+        )
+        self.play(Write(frac_label), GrowArrow(arrow))
+        self.wait(1.5)
 
-        ok = Text("这一份就是蛋糕的 1/5", font_size=32, color=GREEN).to_edge(DOWN, buff=0.6)
-        self.play(FadeIn(ok, shift=UP))
-        self.wait(2)
+        self.play(*[FadeOut(m) for m in [title, slices, caption, frac_label, arrow]])
 
-        self.play(*[FadeOut(m) for m in [title, rest, taken, step1, step2, frac, ok]])
 
     # ---------- 3. 6/5 的困惑 ----------
     def scene_six_fifth_trouble(self):
-        title = Text("那 6/5 呢？", font_size=44, color=YELLOW).to_edge(UP)
+        # 标题：那 6/5 呢？
+        title_a = Text("那 ", font_size=40, color=YELLOW)
+        title_frac = MathTex(r"\frac{6}{5}", font_size=56, color=YELLOW)
+        title_b = Text(" 呢？", font_size=40, color=YELLOW)
+        title = VGroup(title_a, title_frac, title_b).arrange(RIGHT, buff=0.15)
+        title.to_edge(UP)
         self.play(Write(title))
 
-        # 居中重新画一个蛋糕
-        center = LEFT * 3 + DOWN * 0.3
-        slices = make_slices(center=center, radius=1.7, n=5, color=ORANGE)
-        self.play(FadeIn(slices))
-
-        statement = Text("“分成 5 份，拿走 6 份？”", font_size=32, color=YELLOW)
-        statement.shift(RIGHT * 2.5 + UP * 1.5)
-        self.play(Write(statement))
+        # 左侧：一个蛋糕分成 5 份
+        left_center = LEFT * 3.5 + DOWN * 0.3
+        slices = make_slices(center=left_center, radius=1.5, n=5, color=ORANGE)
+        caption = Text("一个蛋糕分成 5 份", font_size=28).next_to(slices, DOWN, buff=0.4)
+        self.play(FadeIn(slices), Write(caption))
         self.wait(0.5)
 
-        # 飞出 5 份到右边
-        positions = [
-            RIGHT * 3.0 + UP * 0.0,
-            RIGHT * 4.6 + UP * 0.0,
-            RIGHT * 3.0 + DOWN * 1.5,
-            RIGHT * 4.6 + DOWN * 1.5,
-            RIGHT * 3.8 + DOWN * 3.0,
+        # 右侧网格：6 个目标位置（2 列 × 3 行）
+        right_anchor = RIGHT * 2.8 + UP * 1.3
+        col_gap = 1.4
+        row_gap = 1.4
+        targets = [
+            right_anchor + LEFT * col_gap / 2 + DOWN * 0 * row_gap,
+            right_anchor + RIGHT * col_gap / 2 + DOWN * 0 * row_gap,
+            right_anchor + LEFT * col_gap / 2 + DOWN * 1 * row_gap,
+            right_anchor + RIGHT * col_gap / 2 + DOWN * 1 * row_gap,
+            right_anchor + LEFT * col_gap / 2 + DOWN * 2 * row_gap,
+            right_anchor + RIGHT * col_gap / 2 + DOWN * 2 * row_gap,
         ]
-        # 让位置避开顶部文字
-        positions = [p + DOWN * 0.3 for p in positions]
 
-        counter_label = Text("已拿：", font_size=30).shift(LEFT * 5 + DOWN * 2.8)
-        counter = Text("0", font_size=44, color=YELLOW).next_to(counter_label, RIGHT, buff=0.2)
+        # 计数器
+        counter_label = Text("已复制：", font_size=28).to_edge(DOWN, buff=0.6).shift(LEFT * 4)
+        counter = Text("0", font_size=40, color=YELLOW).next_to(counter_label, RIGHT, buff=0.2)
         self.play(FadeIn(counter_label), FadeIn(counter))
 
-        for i, s in enumerate(slices):
-            new_counter = Text(str(i + 1), font_size=44, color=YELLOW).move_to(counter)
+        # 复制源：顶端那一份
+        source_piece = slices[0]
+        copies = VGroup()
+
+        for i in range(6):
+            # 复制一份，先叠加在源头上，然后飞到右侧目标位置并缩小
+            clone = source_piece.copy()
+            clone.set_fill(RED, opacity=0.9).set_stroke(YELLOW, width=3)
+            self.add(clone)
+
+            # 同时高亮一下源头作为视觉提示
+            new_counter = Text(str(i + 1), font_size=40, color=YELLOW).move_to(counter)
             self.play(
-                s.animate.set_fill(RED, opacity=0.9).move_to(positions[i]).scale(0.7),
+                clone.animate.scale(0.6).move_to(targets[i]),
+                Indicate(source_piece, color=YELLOW, scale_factor=1.15),
                 Transform(counter, new_counter),
-                run_time=0.5,
+                run_time=0.55,
             )
+            copies.add(clone)
 
-        self.wait(0.4)
+        self.wait(0.5)
 
-        q = Text("第 6 份…在哪？", font_size=40, color=RED).move_to(LEFT * 3 + DOWN * 0.3)
-        self.play(Write(q))
-        self.wait(0.8)
-        cross = Cross(stroke_color=RED, stroke_width=10).scale(1.5).move_to(q)
-        self.play(Create(cross))
-        self.wait(1.2)
+        # 在右侧 6 小份旁标明 6/5
+        frac_label = MathTex(r"\frac{6}{5}", font_size=96, color=RED)
+        # 放到 6 份的右侧
+        frac_label.next_to(copies, RIGHT, buff=0.6)
+        # 如果空间不够（已经贴近右边界），就改到下方
+        if frac_label.get_right()[0] > 6.5:
+            frac_label.next_to(copies, DOWN, buff=0.4)
 
-        hint = Text("说明这种理解方式不够用！", font_size=32, color=ORANGE).to_edge(DOWN, buff=0.5)
-        self.play(Write(hint))
+        brace = Brace(copies, LEFT, color=RED)
+        self.play(GrowFromCenter(brace))
+        self.play(Write(frac_label))
         self.wait(2)
 
         self.play(*[FadeOut(m) for m in [
-            title, slices, statement, counter_label, counter, q, cross, hint
+            title, slices, caption, copies, brace, frac_label,
+            counter_label, counter,
         ]])
+
 
     # ---------- 4. 比例视角：1/5 = 我 1 份 vs 你 5 份 ----------
     def scene_ratio_view(self):
