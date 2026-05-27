@@ -41,9 +41,9 @@ class FractionRatio(Scene):
     def construct(self):
         Text.set_default(font="Microsoft YaHei")
 
-        self.scene_title()
+        # self.scene_title()
         self.scene_review_one_fifth()
-        self.scene_six_fifth_trouble()
+        # self.scene_six_fifth_trouble()
         # self.scene_ratio_view()
         # self.scene_apply_problem()
         # self.scene_baseline_comparison()
@@ -57,47 +57,99 @@ class FractionRatio(Scene):
         self.wait(1.5)
         self.play(FadeOut(title))
 
-    # ---------- 2. 复习 1/5：蛋糕分 5 份取 1 份 ----------
+
+    """
+    1. 展示疑问：什么是分数的量？
+    2. 靠左展示：把蛋糕平均分成 5 份，高亮其中一份，并闪烁
+    3. 高亮的那一份复制并飞到右上侧，在其右侧标明这是\fracP{1}{5}份，把单位份高亮
+    4. 高亮的那一份复制并飞到右上侧，重复连续复制出6份，然后用括号框起来， 在其右侧标明这是\fracP{6}{5}份，把单位份高亮
+    5. 闪烁两个单位"份", 展示：有带单位的分数表示一个"量"
+    """
     def scene_review_one_fifth(self):
-        # 标题：中文 + LaTeX 分数 横排拼接
-        title_text = Text("什么是分数的量？", font_size=40, color=YELLOW)
-        title_text.to_edge(UP)
+        # 1. 展示疑问：什么是分数的量？
+        title_text = Text("什么是分数的量？", font_size=40, color=YELLOW).to_edge(UP)
         self.play(Write(title_text))
 
-        # 把蛋糕平均分成 5 份
-        center = ORIGIN + DOWN * 0.3
-        slices = make_slices(center=center, radius=1.7, n=5, color=ORANGE)
-        caption = Text("把一个蛋糕平均分成 5 份", font_size=32).next_to(slices, DOWN, buff=0.5)
+        # 2. 靠左展示：把蛋糕平均分成 5 份，高亮其中一份，并闪烁。
+        center = LEFT * 3.7 + DOWN * 0.25
+        slices = make_slices(center=center, radius=1.45, n=5, color=ORANGE)
+        caption = Text("把一个蛋糕平均分成 5 份", font_size=30).next_to(slices, DOWN, buff=0.45)
         self.play(FadeIn(slices), Write(caption))
         self.wait(0.5)
 
-        # 高亮其中一份（顶端那片）并闪烁
         target = slices[0]
-        # 先把目标变红 + 黄色描边
         self.play(
             target.animate.set_fill(RED, opacity=0.95).set_stroke(YELLOW, width=5),
             run_time=0.6,
         )
-        # 闪烁 3 次
         for _ in range(3):
-            self.play(target.animate.set_stroke(WHITE, width=2), run_time=0.25)
-            self.play(target.animate.set_stroke(YELLOW, width=6), run_time=0.25)
+            self.play(target.animate.set_stroke(WHITE, width=2), run_time=0.22)
+            self.play(target.animate.set_stroke(YELLOW, width=6), run_time=0.22)
 
-        self.wait(0.3)
-
-        # 在高亮那份蛋糕旁标明 1/5
-        frac_label = MathTex(r"\frac{1}{5}", font_size=84, color=WHITE)
-        # 放到蛋糕右侧偏下，避免与顶部标题重叠
-        frac_label.next_to(slices, RIGHT, buff=1.0).shift(UP * 0.2)
-        arrow = Arrow(
-            start=frac_label.get_left(),
-            end=target.get_center() + UP * 0.3 + RIGHT * 0.1,
-            color=WHITE, buff=0.15, stroke_width=4,
+        # 3. 高亮的那一份复制并飞到右上侧，在其右侧标明这是 1/5 份，把单位“份”高亮。
+        first_pos = RIGHT * 1.1 + UP * 1.55
+        first_piece = target.copy().set_fill(RED, opacity=0.9).set_stroke(YELLOW, width=3)
+        first_piece.move_to(target)
+        self.add(first_piece)
+        self.play(
+            first_piece.animate.scale(0.58).move_to(first_pos),
+            caption.animate.set_opacity(0.45),
+            run_time=0.7,
         )
-        self.play(Write(frac_label), GrowArrow(arrow))
-        self.wait(1.5)
 
-        self.play(*[FadeOut(m) for m in [title, slices, caption, frac_label, arrow]])
+        one_text = Text("这是", font_size=28)
+        one_frac = MathTex(r"\frac{1}{5}", font_size=58, color=RED)
+        one_unit = Text("份", font_size=30, color=YELLOW)
+        one_label = VGroup(one_text, one_frac, one_unit).arrange(RIGHT, buff=0.12)
+        one_label.next_to(first_piece, RIGHT, buff=0.35)
+        one_unit_box = SurroundingRectangle(one_unit, color=YELLOW, buff=0.08)
+        self.play(Write(one_label), Create(one_unit_box))
+        self.play(Indicate(one_unit, color=YELLOW, scale_factor=1.25))
+        self.wait(0.5)
+
+        # 4. 高亮的那一份复制并飞到右上侧，重复连续复制出 6 份，然后用括号框起来，标明这是 6/5 份，把单位“份”高亮。
+        copy_hint = Text("继续以这一份为单位，连续复制出 6 份", font_size=28, color=YELLOW).to_edge(DOWN, buff=0.55)
+        self.play(Write(copy_hint))
+
+        positions = [first_pos + DOWN * 0.62 * i for i in range(6)]
+        copies = VGroup(first_piece)
+        for pos in positions[1:]:
+            clone = target.copy().set_fill(RED, opacity=0.9).set_stroke(YELLOW, width=3)
+            clone.move_to(target)
+            self.add(clone)
+            self.play(
+                clone.animate.scale(0.58).move_to(pos),
+                Indicate(target, color=YELLOW, scale_factor=1.1),
+                run_time=0.42,
+            )
+            copies.add(clone)
+
+        brace = Brace(copies, LEFT, color=RED)
+        six_frac = MathTex(r"\frac{6}{5}", font_size=68, color=RED)
+        six_unit = Text("份", font_size=32, color=YELLOW)
+        six_label = VGroup(six_frac, six_unit).arrange(RIGHT, buff=0.12)
+        six_label.next_to(copies, RIGHT, buff=0.5).shift(DOWN * 0.25)
+        six_unit_box = SurroundingRectangle(six_unit, color=YELLOW, buff=0.08)
+        self.play(GrowFromCenter(brace), Write(six_label), Create(six_unit_box))
+        self.play(Indicate(six_unit, color=YELLOW, scale_factor=1.25))
+        self.wait(0.5)
+
+        # 5. 闪烁两个单位“份”，展示：带单位的分数可以表示一个“量”。
+        for _ in range(2):
+            self.play(
+                Indicate(one_unit, color=YELLOW, scale_factor=1.2),
+                Indicate(six_unit, color=YELLOW, scale_factor=1.2),
+                run_time=0.6,
+            )
+
+        summary = Text("带单位的分数，可以表示一个量", font_size=34, color=GREEN).to_edge(DOWN, buff=0.55)
+        self.play(ReplacementTransform(copy_hint, summary))
+        self.wait(2)
+
+        self.play(*[FadeOut(m) for m in [
+            title_text, slices, copies, caption, one_label, one_unit_box,
+            brace, six_label, six_unit_box, summary,
+        ]])
 
 
     # ---------- 3. 6/5 的困惑 ----------
