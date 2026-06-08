@@ -28,8 +28,9 @@ plt.rcParams["axes.unicode_minus"] = False
 # 全局默认参数
 # ============================================================
 
-DEFAULT_BLOCK_SIZE = 4      # DCT 块大小（越小水印越清晰，2=256²网格；鲁棒需抗压缩可改为 4/8）
-DEFAULT_ALPHA = 20.0        # 嵌入强度（越大越鲁棒但也越可见，推荐 8~20）
+DEFAULT_BLOCK_SIZE = 8      # DCT 块大小（越小水印越清晰，2=256²网格；鲁棒需抗压缩可改为 4/8）
+DEFAULT_ALPHA = 16.0        # 嵌入强度（越大越鲁棒但也越可见，推荐 8~20）
+DEFAULT_WATERMARK_TEXT = "仅限董超用作\n更换经纪人"
 
 
 # ============================================================
@@ -236,7 +237,7 @@ def _ensure_uint8(img):
 # 6. 演示
 # ============================================================
 
-def demo(host_path=None, wm_text="机密文件 版权所有", alpha=DEFAULT_ALPHA):
+def demo(host_path=None, wm_text=DEFAULT_WATERMARK_TEXT, alpha=DEFAULT_ALPHA):
     print("=" * 60)
     print("  频域图像水印工具 v2  (DCT 版)")
     print("=" * 60)
@@ -337,9 +338,9 @@ def run_interactive():
         print(f"文件不存在: {path}"); sys.exit(1)
     path = path if path else None
 
-    text = input("水印文字 (回车='机密文件 版权所有'): ").strip()
+    text = input(f"水印文字 (回车='{DEFAULT_WATERMARK_TEXT}'): ").strip()
     if not text:
-        text = "机密文件\n版权所有"
+        text = DEFAULT_WATERMARK_TEXT
 
     alpha_str = input(f"嵌入强度 alpha (回车={DEFAULT_ALPHA:.0f}): ").strip()
     alpha = float(alpha_str) if alpha_str else DEFAULT_ALPHA
@@ -358,7 +359,7 @@ if __name__ == "__main__":
         arg = sys.argv[1].lower()
         if arg == "demo":
             img = sys.argv[2] if len(sys.argv) > 2 else None
-            txt = sys.argv[3] if len(sys.argv) > 3 else "机密文件 版权所有"
+            txt = sys.argv[3] if len(sys.argv) > 3 else DEFAULT_WATERMARK_TEXT
             a = float(sys.argv[4]) if len(sys.argv) > 4 else DEFAULT_ALPHA
             demo(host_path=img, wm_text=txt, alpha=a)
         elif arg == "interactive":
