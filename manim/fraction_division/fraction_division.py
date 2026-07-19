@@ -1,70 +1,36 @@
 """分数的除法教学动画。
 
-运行：python -m manim -pql fraction_division.py FractionDivision
+可在本目录运行：python -m manim -pql fraction_division.py FractionDivision
 """
+
+from pathlib import Path
+import sys
 
 from manim import *
 import numpy as np
 
+# 允许从当前子目录或 manim 父目录启动渲染。
+MANIM_PROJECT_DIR = Path(__file__).resolve().parents[1]
+if str(MANIM_PROJECT_DIR) not in sys.path:
+    sys.path.insert(0, str(MANIM_PROJECT_DIR))
 
-BG = "#10151C"
-ACCENT = "#F5C451"
-BLUE_ACCENT = "#4DB6E7"
-GREEN_ACCENT = "#69D39B"
-PINK_ACCENT = "#F08080"
+from common import (
+    ACCENT,
+    BG,
+    BLUE_ACCENT,
+    GREEN_ACCENT,
+    PINK_ACCENT,
+    TeachingScene,
+)
 
 
-class FractionDivision(Scene):
+class FractionDivision(TeachingScene):
     def construct(self):
-        self.camera.background_color = BG
-        Text.set_default(font="Microsoft YaHei")
-        self.subtitle = None
-
-        self.cover()
+        #self.cover()
         self.review_division()
-        self.fraction_divided_by_integer()
-        self.integer_divided_by_fraction()
-        self.algebraic_derivation()
-
-    # ---------- 通用组件 ----------
-    def set_subtitle(self, content, wait=0.35):
-        new_subtitle = Text(content, font_size=28, color=WHITE)
-        new_subtitle.to_edge(DOWN, buff=0.28)
-        backdrop = BackgroundRectangle(
-            new_subtitle, color=BLACK, fill_opacity=0.72, buff=0.15
-        )
-        group = VGroup(backdrop, new_subtitle)
-        if self.subtitle is None:
-            self.play(FadeIn(group, shift=UP * 0.08), run_time=0.3)
-        else:
-            self.play(FadeOut(self.subtitle), FadeIn(group), run_time=0.25)
-        self.subtitle = group
-        self.wait(wait)
-
-    def clear_subtitle(self):
-        if self.subtitle is not None:
-            self.play(FadeOut(self.subtitle), run_time=0.2)
-            self.subtitle = None
-
-    def section_title(self, content):
-        title = Text(content, font_size=38, color=ACCENT)
-        title.to_corner(UL, buff=0.42)
-        rule = Line(LEFT, RIGHT, color=ACCENT, stroke_width=3)
-        rule.set_width(min(title.width, 4.2)).next_to(title, DOWN, buff=0.12)
-        return VGroup(title, rule)
-
-    def pulse(self, *mobjects, color=ACCENT):
-        self.play(
-            *[Indicate(mob, color=color, scale_factor=1.13) for mob in mobjects],
-            run_time=0.7,
-        )
-
-    def clear_scene(self, *keep):
-        keep_ids = {id(mob) for mob in keep}
-        targets = [mob for mob in self.mobjects if id(mob) not in keep_ids]
-        if targets:
-            self.play(*[FadeOut(mob) for mob in targets], run_time=0.55)
-        self.subtitle = None
+        #self.fraction_divided_by_integer()
+        #self.integer_divided_by_fraction()
+        #self.algebraic_derivation()
 
     # ---------- 1. 封面 ----------
     def cover(self):
@@ -87,17 +53,21 @@ class FractionDivision(Scene):
 
         six, divide_three, equals_two = MathTex("6", r"\div 3", "=2", font_size=70)
         equation = VGroup(six, divide_three, equals_two).arrange(RIGHT, buff=0.18)
-        equation.to_edge(UP, buff=0.5).shift(RIGHT * 2.4)
+        equation.move_to(LEFT * 0.75 + UP * 2.25)
         self.play(Write(equation))
-        self.set_subtitle("为什么六除以三等于二？")
+        self.set_subtitle("为什么6除以3等于2？")
+        self.wait(3)
 
         dots = VGroup(*[
             Dot(radius=0.25, color=BLUE_ACCENT).move_to(
-                np.array([-2.2 + (i % 3) * 1.25, 0.7 - (i // 3) * 1.15, 0])
+                np.array([-4.0 + (i % 3) * 1.25, 0.55 - (i // 3) * 1.15, 0])
             ) for i in range(6)
         ])
-        self.pulse(six)
+        self.pulse(six, duration=3)
+        self.wait(1)
         self.play(LaggedStart(*[GrowFromCenter(dot) for dot in dots], lag_ratio=0.1))
+        self.set_subtitle("可以认为6除以3，是把6平均分成3份，每份有多少", 6)
+        self.wait(3)
 
         self.pulse(divide_three)
         columns = VGroup(*[
@@ -105,31 +75,45 @@ class FractionDivision(Scene):
             for i in range(3)
         ])
         self.play(LaggedStart(*[Create(box) for box in columns], lag_ratio=0.18))
+        self.wait(3)
+
         self.pulse(equals_two)
         sample = VGroup(dots[0], dots[3]).copy()
-        sample_target = sample.copy().arrange(DOWN, buff=0.55).move_to(RIGHT * 3.4 + UP * 0.25)
+        sample_target = sample.copy().arrange(DOWN, buff=0.55).move_to(RIGHT * 3.4 + UP * 0.85)
         self.add(sample)
         self.play(Transform(sample, sample_target))
         brace = Brace(sample, RIGHT, color=GREEN_ACCENT)
-        count = MathTex("2", font_size=52, color=GREEN_ACCENT).next_to(brace, RIGHT)
-        self.play(GrowFromCenter(brace), Write(count))
-        self.set_subtitle("六平均分成三份，每份有两个")
+        count = Text("每份2个", font_size=20, color=ACCENT).next_to(brace, RIGHT)
+        first_label = Text("平均分成 3 份", font_size=24, color=GREEN_ACCENT)
+        first_label.next_to(sample, UP, buff=0.25)
+        self.play(GrowFromCenter(brace), Write(count), FadeIn(first_label))
+        self.wait(3)
 
-        self.play(FadeOut(sample), FadeOut(brace), FadeOut(count), FadeOut(columns))
+        # 保留第一种理解的结果，与下面的第二种理解同时展示比较。
+        self.play(FadeOut(columns))
+        self.set_subtitle("也可以认为6除以3，是每3个分一组，一共有几组", duration=3)
+
         self.pulse(divide_three)
         rows = VGroup(*[
             SurroundingRectangle(VGroup(*dots[i * 3:(i + 1) * 3]), buff=0.2, color=PINK_ACCENT)
             for i in range(2)
         ])
         self.play(Create(rows[0]), Create(rows[1]))
+        self.wait(3)
+
         self.pulse(equals_two)
-        row_copies = rows.copy()
-        self.play(row_copies.animate.scale(0.72).move_to(RIGHT * 3.35 + DOWN * 0.65))
+        row_copies = VGroup(*[
+            VGroup(*dots[i * 3:(i + 1) * 3], rows[i]).copy()
+            for i in range(2)
+        ])
+        self.play(row_copies.animate.scale(0.58).move_to(RIGHT * 3.35 + DOWN * 1.45))
         brace2 = Brace(row_copies, RIGHT, color=GREEN_ACCENT)
-        count2 = MathTex("2", font_size=52, color=GREEN_ACCENT).next_to(brace2, RIGHT)
-        self.play(GrowFromCenter(brace2), Write(count2))
-        self.set_subtitle("也可以理解为：六里面有两个三")
-        self.wait(1)
+        count2 = Text("一共2组", font_size=20, color=ACCENT).next_to(brace2, RIGHT)
+        second_label = Text("每 3 个分成一组", font_size=24, color=GREEN_ACCENT)
+        second_label.next_to(row_copies, UP, buff=0.2)
+        self.play(GrowFromCenter(brace2), Write(count2), FadeIn(second_label))
+        
+        self.wait(5)
         self.clear_subtitle()
         self.clear_scene()
 
@@ -139,13 +123,13 @@ class FractionDivision(Scene):
         self.play(FadeIn(title))
 
         lhs = MathTex(
-            r"\frac{4}{5}", r"\div", "2", "=",
+            "\\frac{4}{5}", "\\div", "2", "=",
             substrings_to_isolate=["4", "5"],
             font_size=64,
         )
         numerator = lhs.get_part_by_tex("4")
         denominator = lhs.get_part_by_tex("5")
-        division_term = VGroup(lhs.get_part_by_tex(r"\div"), lhs.get_part_by_tex("2"))
+        division_term = VGroup(lhs.get_part_by_tex("\\div"), lhs.get_part_by_tex("2"))
         question = MathTex("?", font_size=64, color=ACCENT)
         equation = VGroup(lhs, question).arrange(RIGHT, buff=0.15)
         equation.to_corner(UR, buff=0.55)
@@ -386,7 +370,6 @@ class FractionDivision(Scene):
         self.wait(2)
         self.clear_subtitle()
         self.play(FadeOut(title), FadeOut(bridge), FadeOut(annotations), FadeOut(closing))
-
 
 class Cover(Scene):
     """仅渲染封面，便于快速预览。"""
