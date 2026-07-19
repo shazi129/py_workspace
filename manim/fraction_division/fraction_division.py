@@ -27,8 +27,8 @@ from common import (
 class FractionDivision(TeachingScene):
     def construct(self):
         #self.cover()
-        self.review_division()
-        #self.fraction_divided_by_integer()
+        #self.review_division()
+        self.fraction_divided_by_integer()
         #self.integer_divided_by_fraction()
         #self.algebraic_derivation()
 
@@ -119,27 +119,34 @@ class FractionDivision(TeachingScene):
 
     # ---------- 3. 分数除以整数 ----------
     def fraction_divided_by_integer(self):
-        title = self.section_title("分数除以整数")
-        self.play(FadeIn(title))
+        title = Text("分数除以整数", font_size=48, color=ACCENT)
+        self.play(Write(title))
+        title_target = title.copy().scale(0.78).to_corner(UL, buff=0.42)
+        self.play(Transform(title, title_target))
+
+        # 主等式的统一中心点：位于画面中心上方 几 个单位。
+        # 后续等式内容变长时仍移动到此点，从而按新宽度重新水平居中。
+        equation_center = UP * 2.3
 
         lhs = MathTex(
             "\\frac{4}{5}", "\\div", "2", "=",
             substrings_to_isolate=["4", "5"],
-            font_size=64,
+            font_size=46,
         )
         numerator = lhs.get_part_by_tex("4")
         denominator = lhs.get_part_by_tex("5")
         division_term = VGroup(lhs.get_part_by_tex("\\div"), lhs.get_part_by_tex("2"))
-        question = MathTex("?", font_size=64, color=ACCENT)
+        question = MathTex("?", font_size=46, color=ACCENT)
         equation = VGroup(lhs, question).arrange(RIGHT, buff=0.15)
-        equation.to_corner(UR, buff=0.55)
+        equation.move_to(equation_center)
         self.play(Write(equation))
         self.pulse(question)
         self.set_subtitle("五分之四除以二等于多少呢？")
 
         grid = VGroup()
         cells = VGroup()
-        left, bottom, width, height = -4.8, -1.25, 7.0, 2.2
+        # left = -width / 2，使整个五等分矩形以画面中心线水平居中。
+        left, bottom, width, height = -3.5, -1.25, 7.0, 2.2
         for col in range(5):
             cell = Rectangle(width=width / 5, height=height, stroke_color=WHITE)
             cell.move_to([left + width * (col + 0.5) / 5, bottom + height / 2, 0])
@@ -203,9 +210,18 @@ class FractionDivision(TeachingScene):
                         color=ACCENT,
                         stroke_width=2,
                     ))
-        answer = MathTex(r"\frac{4}{10}", font_size=60, color=GREEN_ACCENT).move_to(question)
+        answer = MathTex(r"\frac{4}{10}", font_size=46, color=GREEN_ACCENT)
+        answered_equation_target = VGroup(lhs.copy(), answer.copy())
+        answered_equation_target.arrange(RIGHT, buff=0.15).move_to(equation_center)
+        answer.move_to(answered_equation_target[1])
         answer_label = MathTex(r"\frac{4}{10}", font_size=45, color=GREEN_ACCENT).next_to(cells, DOWN)
-        self.play(Create(selected), ReplacementTransform(question, answer), Transform(frac_label, answer_label))
+        self.play(
+            Create(selected),
+            lhs.animate.move_to(answered_equation_target[0]),
+            ReplacementTransform(question, answer),
+            Transform(frac_label, answer_label),
+        )
+        equation = VGroup(lhs, answer)
         self.set_subtitle("把五分之四平均分成两份，每份是十分之四")
 
         rule_calc = MathTex(r"5\times2=10", font_size=56, color=ACCENT).move_to(RIGHT * 3 + DOWN * 0.7)
@@ -216,9 +232,9 @@ class FractionDivision(TeachingScene):
 
         full_equation = MathTex(
             r"\frac{4}{5}\div2=\frac{4}{10}=\frac{2}{5}",
-            font_size=58,
-        ).move_to(equation)
-        self.play(ReplacementTransform(VGroup(lhs, answer), full_equation))
+            font_size=42,
+        ).move_to(equation_center)
+        self.play(ReplacementTransform(equation, full_equation))
         calc2 = MathTex(r"4\div2=2", font_size=56, color=ACCENT).move_to(RIGHT * 3 + DOWN * 0.7)
         self.pulse(full_equation)
         self.play(FadeIn(calc2, shift=UP * 0.2))
