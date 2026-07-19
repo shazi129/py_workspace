@@ -1,4 +1,7 @@
 {
     "python.pythonPath": "E:\\ProgramData\\Anaconda3\\envs\\First\\python.exe",
-    "editor.fontSize": 16
+    "editor.fontSize": 16,
+    "gopls": {
+        "vulncheck": "Off"
+    }
 }
